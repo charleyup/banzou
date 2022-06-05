@@ -20,16 +20,29 @@ const creator = new FFCreator({
 const scene = new FFScene()
 scene.setBgColor('#000000')
 
+let rollupIndex = 10
 
 lyrics.forEach((item, index) => {
+    let curY = index * lineHeight + paddingTop
     const text = new FFText({
         text: item.text,
         x: 280,
-        y: index * lineHeight + paddingTop,
+        y: curY,
         fontSize: fontSize,
         color: '#ffffff'
     })
     text.alignCenter()
+
+    for (let i = rollupIndex; i < lyrics.length; i++) {
+        const seconds = lyrics[i].seconds;
+        text.addAnimate({
+            from: { y: curY, alpha: 0.3 },
+            to: { y: curY -= lineHeight, alpha: 0.3 },
+            delay: seconds,
+            time: 0.5
+        })
+    }
+
     text.addAnimate({
         from: { scale: 1, alpha: 0.3 },
         to: { scale: 1.3, alpha: 1 },
@@ -44,6 +57,7 @@ lyrics.forEach((item, index) => {
             time: 0.5
         })
     }
+
     scene.addChild(text)
 })
 scene.setDuration(duration)
