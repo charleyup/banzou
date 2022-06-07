@@ -20,7 +20,7 @@ const creator = new FFCreator({
 const scene = new FFScene()
 scene.setBgColor('#000000')
 
-let rollupIndex = 10
+const rollupIndex = Math.floor(height / lineHeight / 2)
 
 lyrics.forEach((item, index) => {
     let curY = index * lineHeight + paddingTop
