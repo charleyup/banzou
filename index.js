@@ -5,28 +5,55 @@ const { FFScene, FFText, FFCreator}  = require('ffcreator')
 const config = require('./config')
 const { fontSize, lineHeight, paddingTop } = config.text
 const { width, height } = config.creator
-const { lyrics } = require('./getLRC.js')
+const { getLyrics } = require('./getLRC.js')
+
+// 获取命令行音频、歌词参数
+const argv = process.argv
+const audioPath = argv[2]
+const lrcPath = argv[3]
+const fileName = path.basename(audioPath).split('.')?.[0]
+
+const lyrics = getLyrics(lrcPath)
+
 const duration = lyrics[lyrics.length - 1].seconds + 5
 
 const creator = new FFCreator({
-    cacheDir: path.join(__dirname, './cache'),
-    outputDir: path.join(__dirname, './output'),
-    output: 'test.mp4',
-    width,
-    height,
-    audio: path.join(__dirname, './input/gbqq.mp3')
+  cacheDir: config.cacheDir,
+  output: path.join(config.creator.outputDir, `${fileName}.mp4`),
+  width,
+  height,
+  audio: path.resolve(audioPath)
 })
 
 const scene = new FFScene()
 scene.setBgColor('#000000')
 
-const rollupIndex = Math.floor(height / lineHeight / 2)
+// 添加标题
+const title = new FFText({
+  text: `《${fileName}》`,
+  x: width / 2,
+  y: height / 2,
+  fontSize: 54,
+  color: '#000000'
+})
+title.setBackgroundColor('#ffffff')
+title.alignCenter()
+title.addAnimate({
+  from: { alpha: 1 },
+  to: { alpha: 0 },
+  delay: 0.5,
+  time: 0.2
+})
+scene.addChild(title)
 
+
+// 添加歌词
+const rollupIndex = Math.floor(height / lineHeight / 2)
 lyrics.forEach((item, index) => {
     let curY = index * lineHeight + paddingTop
     const text = new FFText({
         text: item.text,
-        x: 280,
+        x: width / 2,
         y: curY,
         fontSize: fontSize,
         color: '#ffffff'
@@ -60,6 +87,7 @@ lyrics.forEach((item, index) => {
 
     scene.addChild(text)
 })
+
 scene.setDuration(duration)
 
 creator.addChild(scene)

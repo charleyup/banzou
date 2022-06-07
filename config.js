@@ -1,7 +1,10 @@
+const path = require('path')
 const config = {
     creator: {
         width: 540,
-        height: 960
+        height: 960,
+        cacheDir: path.join(__dirname, './cache'),
+        outputDir: path.join(__dirname, './output')
     },
     scene: {},
     text: {

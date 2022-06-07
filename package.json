@@ -10,7 +10,6 @@
   "license": "ISC",
   "dependencies": {
     "colors": "^1.4.0",
-    "dayjs": "^1.11.2",
     "ffcreator": "^6.6.9"
   },
   "devDependencies": {}
