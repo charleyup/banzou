@@ -12,7 +12,8 @@ const argv = process.argv
 const audioPath = argv[2]
 const lrcPath = argv[3]
 // const fileName = path.basename(audioPath).split('.')?.[0]
-const fileName = path.basename(lrcPath).split('.')?.[0]
+// const fileName = path.basename(lrcPath).split('.')?.[0]
+const fileName = path.basename(lrcPath, '.lrc')
 
 const lyrics = getLyrics(lrcPath)
 
