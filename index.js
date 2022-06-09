@@ -11,7 +11,8 @@ const { getLyrics } = require('./getLRC.js')
 const argv = process.argv
 const audioPath = argv[2]
 const lrcPath = argv[3]
-const fileName = path.basename(audioPath).split('.')?.[0]
+// const fileName = path.basename(audioPath).split('.')?.[0]
+const fileName = path.basename(lrcPath).split('.')?.[0]
 
 const lyrics = getLyrics(lrcPath)
 
