@@ -17,7 +17,7 @@ const fileName = path.basename(lrcPath, '.lrc')
 
 const lyrics = getLyrics(lrcPath)
 
-const duration = lyrics[lyrics.length - 1].seconds + 5
+const duration = argv[4] || lyrics[lyrics.length - 1].seconds + 5
 
 const creator = new FFCreator({
   cacheDir: config.cacheDir,
@@ -38,6 +38,7 @@ const title = new FFText({
   fontSize: 54,
   color: '#000000'
 })
+
 title.setBackgroundColor('#ffffff')
 title.alignCenter()
 title.addAnimate({
@@ -47,6 +48,26 @@ title.addAnimate({
   time: 0.2
 })
 scene.addChild(title)
+
+if (argv[4]) {
+  const title = new FFText({
+    text: `合拍版`,
+    x: width / 2,
+    y: height / 2 + 60,
+    fontSize: 50,
+    color: '#000000'
+  })
+  
+  title.setBackgroundColor('#ffffff')
+  title.alignCenter()
+  title.addAnimate({
+    from: { alpha: 1 },
+    to: { alpha: 0 },
+    delay: 0.5,
+    time: 0.2
+  })
+  scene.addChild(title)
+}
 
 
 // 添加歌词
