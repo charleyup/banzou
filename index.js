@@ -11,17 +11,18 @@ const { getLyrics } = require('./getLRC.js')
 const argv = process.argv
 const audioPath = argv[2]
 const lrcPath = argv[3]
+const cutDuration = argv[4]
 // const fileName = path.basename(audioPath).split('.')?.[0]
 // const fileName = path.basename(lrcPath).split('.')?.[0]
 const fileName = path.basename(lrcPath, '.lrc')
 
 const lyrics = getLyrics(lrcPath)
 
-const duration = argv[4] || lyrics[lyrics.length - 1].seconds + 5
+const duration = cutDuration || lyrics[lyrics.length - 1].seconds + 5
 
 const creator = new FFCreator({
   cacheDir: config.cacheDir,
-  output: path.join(config.creator.outputDir, `${fileName}.mp4`),
+  output: path.join(config.creator.outputDir, `${fileName}${cutDuration ? '-合拍版' : ''}.mp4`),
   width,
   height,
   audio: path.resolve(audioPath)
