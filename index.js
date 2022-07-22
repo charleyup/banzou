@@ -9,9 +9,9 @@ const { getLyrics } = require('./getLRC.js')
 
 // 获取命令行音频、歌词参数
 const argv = process.argv
-const audioPath = argv[2]
-const lrcPath = argv[3]
-const cutDuration = argv[4]
+const audioPath = argv[2] // 音频路径
+const lrcPath = argv[3] // 歌词路径
+const cutDuration = argv[4] // 剪辑时长、不传默认音频时长
 // const fileName = path.basename(audioPath).split('.')?.[0]
 // const fileName = path.basename(lrcPath).split('.')?.[0]
 const fileName = path.basename(lrcPath, '.lrc')
@@ -25,7 +25,8 @@ const creator = new FFCreator({
   output: path.join(config.creator.outputDir, `${fileName}${cutDuration ? '-合拍版' : ''}.mp4`),
   width,
   height,
-  audio: path.resolve(audioPath)
+  audio: path.resolve(audioPath),
+  fps: 25
 })
 
 const scene = new FFScene()
