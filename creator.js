@@ -7,17 +7,30 @@ const { fontSize, lineHeight, paddingTop } = config.text
 const { width, height } = config.creator
 const { getLyrics } = require('./getLRC.js')
 
-const create = (folderPath, cutDuration) => {
+const create = ({ folderPath, cutDuration, autoCut }) => {
     const fileName = path.basename(folderPath)
     const audioPath = path.join(folderPath, 'accompaniment.wav')// 音频路径
     const lrcPath = path.join(folderPath, `${fileName}.lrc`) // 歌词路径
     const lyrics = getLyrics(lrcPath)
 
+    // 自动分段
+    if (autoCut) {
+        cutDuration = 0
+        for (let i = 1; i < lyrics.length; i++) {
+            const preSec = lyrics[i-1].seconds
+            const curSec = lyrics[i].seconds
+            // if (curSec < 60) break
+            if (cutDuration < curSec - preSec) {
+                cutDuration = preSec + (curSec - preSec) / 2
+            }
+        }
+    }
+
     const duration = cutDuration || lyrics[lyrics.length - 1].seconds + 5
 
     const creator = new FFCreator({
         cacheDir: config.cacheDir,
-        output: path.join(config.creator.outputDir, `${fileName}${cutDuration ? '-合拍版' : ''}.mp4`),
+        output: path.join(config.creator.outputDir, `${fileName}${cutDuration || autoCut ? '-合拍版' : ''}.mp4`),
         width,
         height,
         audio: path.resolve(audioPath),
@@ -46,7 +59,7 @@ const create = (folderPath, cutDuration) => {
     })
     scene.addChild(title)
 
-    if (cutDuration) {
+    if (cutDuration || autoCut) {
         const title = new FFText({
             text: `合拍版`,
             x: width / 2,
