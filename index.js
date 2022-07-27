@@ -9,12 +9,14 @@ const { getLyrics } = require('./getLRC.js')
 
 // 获取命令行音频、歌词参数
 const argv = process.argv
-const audioPath = argv[2] // 音频路径
-const lrcPath = argv[3] // 歌词路径
-const cutDuration = argv[4] // 剪辑时长、不传默认音频时长
-// const fileName = path.basename(audioPath).split('.')?.[0]
+const folderPath = argv[2] // 文件夹目录
+const fileName = path.basename(folderPath)
+const audioPath =  path.join(folderPath, 'accompaniment.wav')// 音频路径
+const lrcPath = path.join(folderPath, `${fileName}.lrc`) // 歌词路径
+const cutDuration = argv[3] // 剪辑时长、不传默认音频时长
+
 // const fileName = path.basename(lrcPath).split('.')?.[0]
-const fileName = path.basename(lrcPath, '.lrc')
+// const fileName = path.basename(lrcPath, '.lrc')
 
 const lyrics = getLyrics(lrcPath)
 
