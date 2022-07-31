@@ -1,140 +1,24 @@
 const path = require('path')
-const fs = require('fs')
-const colors = require('colors')
-const { FFScene, FFText, FFCreator}  = require('ffcreator')
-const config = require('./config')
-const { fontSize, lineHeight, paddingTop } = config.text
-const { width, height } = config.creator
-const { getLyrics } = require('./getLRC.js')
-
-// 获取命令行音频、歌词参数
+const shell = require('shelljs')
+const create = require('./creator.js')
+const separateOutput = 'input'
 const argv = process.argv
-const folderPath = argv[2] // 文件夹目录
-const fileName = path.basename(folderPath)
-const audioPath =  path.join(folderPath, 'accompaniment.wav')// 音频路径
-const lrcPath = path.join(folderPath, `${fileName}.lrc`) // 歌词路径
-const cutDuration = argv[3] // 剪辑时长、不传默认音频时长
-
-// const fileName = path.basename(lrcPath).split('.')?.[0]
-// const fileName = path.basename(lrcPath, '.lrc')
-
-const lyrics = getLyrics(lrcPath)
-
-const duration = cutDuration || lyrics[lyrics.length - 1].seconds + 5
-
-const creator = new FFCreator({
-  cacheDir: config.cacheDir,
-  output: path.join(config.creator.outputDir, `${fileName}${cutDuration ? '-合拍版' : ''}.mp4`),
-  width,
-  height,
-  audio: path.resolve(audioPath),
-  fps: 25
-})
-
-const scene = new FFScene()
-scene.setBgColor('#000000')
-
-// 添加标题
-const title = new FFText({
-  text: `《${fileName}》`,
-  x: width / 2,
-  y: height / 2,
-  fontSize: 54,
-  color: '#000000'
-})
-
-title.setBackgroundColor('#ffffff')
-title.alignCenter()
-title.addAnimate({
-  from: { alpha: 1 },
-  to: { alpha: 0 },
-  delay: 0.5,
-  time: 0.2
-})
-scene.addChild(title)
-
-if (argv[4]) {
-  const title = new FFText({
-    text: `合拍版`,
-    x: width / 2,
-    y: height / 2 + 60,
-    fontSize: 50,
-    color: '#000000'
-  })
-  
-  title.setBackgroundColor('#ffffff')
-  title.alignCenter()
-  title.addAnimate({
-    from: { alpha: 1 },
-    to: { alpha: 0 },
-    delay: 0.5,
-    time: 0.2
-  })
-  scene.addChild(title)
-}
-
-
-// 添加歌词
-const rollupIndex = Math.floor(height / lineHeight / 2)
-lyrics.forEach((item, index) => {
-    let curY = index * lineHeight + paddingTop
-    const text = new FFText({
-        text: item.text,
-        x: width / 2,
-        y: curY,
-        fontSize: fontSize,
-        color: '#ffffff'
-    })
-    text.alignCenter()
-
-    for (let i = rollupIndex; i < lyrics.length; i++) {
-        const seconds = lyrics[i].seconds;
-        text.addAnimate({
-            from: { y: curY, alpha: 0.3 },
-            to: { y: curY -= lineHeight, alpha: 0.3 },
-            delay: seconds,
-            time: 0.5
+const sourceAudioPath = argv[2] // mp3源文件路径
+const lrcPath = sourceAudioPath.replace('.mp3', '.lrc') // 歌词路径
+const basename = path.basename(sourceAudioPath, '.mp3') // 获取输出的文件夹名称
+const separateCommond = `python3.8 -m spleeter separate -p spleeter:2stems -o ${separateOutput} "${sourceAudioPath}"`
+shell.exec(separateCommond, (code, stdout, stderr) => {
+    if (code === 0) {
+        // 伴奏分离成功
+        shell.cp(lrcPath, path.resolve(__dirname, `${separateOutput}/${basename}/${basename}.lrc`)) // 拷贝歌词到伴奏文件夹
+        const folderPath = path.resolve(__dirname, `${separateOutput}/${basename}`)
+        const cutDuration = argv[3] // 剪辑时长、不传默认音频时长
+        create({
+            folderPath,
+            cutDuration
+        }).then((output) => {
+            shell.exec(`open "${output}"`) // 打开输出文件
+            shell.rm([sourceAudioPath, lrcPath]) // 删除mp3及歌词文件
         })
     }
-
-    text.addAnimate({
-        from: { scale: 1, alpha: 0.3 },
-        to: { scale: 1.3, alpha: 1 },
-        delay: item.seconds,
-        time: 0.5
-    })
-    if (index !== lyrics.length - 1) {
-        text.addAnimate({
-            from: { scale: 1.3, alpha: 1 },
-            to: { scale: 1, alpha: 0.3 },
-            delay: lyrics[index + 1].seconds,
-            time: 0.5
-        })
-    }
-
-    scene.addChild(text)
 })
-
-scene.setDuration(duration)
-
-creator.addChild(scene)
-
-creator.start()
-
-creator.on('start', () => {
-    console.log(`FFCreator start`);
-  });
-
-  creator.on('error', e => {
-    console.log(`FFCreator error: ${e.error}}`);
-  });
-
-  creator.on('progress', e => {
-    console.log(colors.yellow(`FFCreator progress: ${(e.percent * 100) >> 0}%`));
-  });
-
-  creator.on('complete', e => {
-    console.log(
-      colors.magenta(`FFCreator completed: \n USEAGE: ${e.useage} \n PATH: ${e.output} `),
-    );
-  });
