@@ -40,12 +40,31 @@ const create = ({ folderPath, cutDuration, autoCut }) => {
     const scene = new FFScene()
     scene.setBgColor('#000000')
 
-    // 添加标题
+    // 添加歌手
+    const singer = new FFText({
+        text: fileName.split('-')[0].trim(),
+        x: width / 2,
+        y: height / 2 - 60,
+        fontSize: 50,
+        color: '#000000'
+    })
+
+    singer.setBackgroundColor('#ffffff')
+    singer.alignCenter()
+    singer.addAnimate({
+        from: { alpha: 1 },
+        to: { alpha: 0 },
+        delay: 0.5,
+        time: 0.2
+    })
+    scene.addChild(singer)
+
+    // 添加歌曲名
     const title = new FFText({
-        text: `《${fileName}》`,
+        text: `《${fileName.split('-')[1].trim()}》`,
         x: width / 2,
         y: height / 2,
-        fontSize: 54,
+        fontSize: 50,
         color: '#000000'
     })
 

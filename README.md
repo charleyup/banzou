@@ -12,3 +12,9 @@ sourceFolder包含accompaniment.wav音频文件和sourceFolder目录同名的lrc
 `bash
 node index.js sourceFolder sec
 `
+
+## 一键生成
+.mp3及同名.lrc文件需放置于同一目录
+`bash
+node index.js *.mp3 sec
+`
