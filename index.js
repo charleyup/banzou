@@ -4,9 +4,10 @@ const create = require('./creator.js')
 const separateOutput = 'input'
 const argv = process.argv
 const sourceAudioPath = argv[2] // mp3源文件路径
-const lrcPath = sourceAudioPath.replace('.mp3', '.lrc') // 歌词路径
-const basename = path.basename(sourceAudioPath, '.mp3') // 获取输出的文件夹名称
-const separateCommond = `python3.8 -m spleeter separate -p spleeter:2stems -o ${separateOutput} "${sourceAudioPath}"`
+const lrcPath = sourceAudioPath.replace('.ogg', '.lrc') // 歌词路径
+const basename = path.basename(sourceAudioPath, '.ogg') // 获取输出的文件夹名称
+const separateCommond = `spleeter separate -p spleeter:2stems -o ${separateOutput} "${sourceAudioPath}"`
+// const separateCommond = `python3.8 -m spleeter separate -p spleeter:2stems -o ${separateOutput} "${sourceAudioPath}"`
 shell.exec(separateCommond, (code, stdout, stderr) => {
     if (code === 0) {
         // 伴奏分离成功
