@@ -4,22 +4,36 @@ const create = require('./creator.js')
 const separateOutput = 'input'
 const argv = process.argv
 const sourceAudioPath = argv[2] // mp3源文件路径
-const lrcPath = sourceAudioPath.replace('.ogg', '.lrc') // 歌词路径
-const basename = path.basename(sourceAudioPath, '.ogg') // 获取输出的文件夹名称
-const separateCommond = `spleeter separate -p spleeter:2stems -o ${separateOutput} "${sourceAudioPath}"`
-// const separateCommond = `python3.8 -m spleeter separate -p spleeter:2stems -o ${separateOutput} "${sourceAudioPath}"`
-shell.exec(separateCommond, (code, stdout, stderr) => {
+const endSec = argv[4] // 音频截取结束时间
+const startSec = argv[3] || 0 // 音频截取开始时间
+const fullBasename = path.basename(sourceAudioPath)
+const lrcPath = sourceAudioPath.replace(fullBasename.split('.')[1], 'lrc') // 歌词路径
+const basename = fullBasename.split('.')[0] // 获取输出的文件夹名称
+
+const separateCommond = `spleeter separate -p spleeter:2stems -o ${separateOutput} "./${basename}.mp3"`
+const cutCommond = `ffmpeg -i "${sourceAudioPath}" -acodec copy -ss ${startSec} -t ${endSec - startSec} "./${basename}.mp3"`
+
+// 音频截取
+const cut = () => shell.exec(cutCommond, code => {
+    if (code === 0) separate()
+})
+
+// 伴奏分离
+const separate = () => shell.exec(separateCommond, (code, stdout, stderr) => {
     if (code === 0) {
         // 伴奏分离成功
         shell.cp(lrcPath, path.resolve(__dirname, `${separateOutput}/${basename}/${basename}.lrc`)) // 拷贝歌词到伴奏文件夹
         const folderPath = path.resolve(__dirname, `${separateOutput}/${basename}`)
-        const cutDuration = argv[3] // 剪辑时长、不传默认音频时长
         create({
             folderPath,
-            cutDuration
+            endSec,
+            startSec
         }).then((output) => {
             shell.exec(`open "${output}"`) // 打开输出文件
-            shell.rm([sourceAudioPath, lrcPath]) // 删除mp3及歌词文件
+            shell.rm([`./${basename}.mp3`])
+            // shell.rm([sourceAudioPath, lrcPath]) // 删除mp3及歌词文件
         })
     }
 })
+
+cut()

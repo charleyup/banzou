@@ -18,3 +18,9 @@ node index.js sourceFolder sec
 `bash
 node index.js *.mp3 sec
 `
+
+##
+```bash
+cd ~/charleyup/banzouba
+node index.js ../../Desktop/dy/* startSec endSec
+```

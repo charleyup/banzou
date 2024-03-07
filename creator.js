@@ -1,36 +1,36 @@
 const path = require('path')
 const fs = require('fs')
 const colors = require('colors')
-const { FFScene, FFText, FFCreator } = require('ffcreator')
+const { FFScene, FFText, FFCreator, FFAudio } = require('ffcreator')
 const config = require('./config')
 const { fontSize, lineHeight, paddingTop } = config.text
 const { width, height } = config.creator
 const { getLyrics } = require('./getLRC.js')
 
-const create = ({ folderPath, cutDuration, autoCut }) => {
+const create = ({ folderPath, endSec, startSec, autoCut }) => {
     const fileName = path.basename(folderPath)
     const audioPath = path.join(folderPath, 'accompaniment.wav')// 音频路径
     const lrcPath = path.join(folderPath, `${fileName}.lrc`) // 歌词路径
-    const lyrics = getLyrics(lrcPath)
+    let lyrics = getLyrics(lrcPath)
 
     // 自动分段
     if (autoCut) {
-        cutDuration = 0
+        endSec = 0
         for (let i = 1; i < lyrics.length; i++) {
             const preSec = lyrics[i-1].seconds
             const curSec = lyrics[i].seconds
             // if (curSec < 60) break
-            if (cutDuration < curSec - preSec) {
-                cutDuration = preSec + (curSec - preSec) / 2
+            if (endSec < curSec - preSec) {
+                endSec = preSec + (curSec - preSec) / 2
             }
         }
     }
 
-    const duration = cutDuration || lyrics[lyrics.length - 1].seconds + 5
+    const duration = endSec - startSec
 
     const creator = new FFCreator({
         cacheDir: config.cacheDir,
-        output: path.join(config.creator.outputDir, `${fileName}${cutDuration || autoCut ? '-合拍版' : ''}.mp4`),
+        output: path.join(config.creator.outputDir, `${fileName}${endSec || autoCut ? '-合拍版' : ''}.mp4`),
         width,
         height,
         audio: path.resolve(audioPath),
@@ -78,7 +78,7 @@ const create = ({ folderPath, cutDuration, autoCut }) => {
     })
     scene.addChild(title)
 
-    if (cutDuration || autoCut) {
+    if (endSec || autoCut) {
         const title = new FFText({
             text: `合拍版`,
             x: width / 2,
@@ -101,8 +101,12 @@ const create = ({ folderPath, cutDuration, autoCut }) => {
 
     // 添加歌词
     const rollupIndex = Math.floor(height / lineHeight / 2)
+    lyrics = lyrics.filter(item => {
+        return item.seconds > startSec && item.seconds < endSec
+    })
     lyrics.forEach((item, index) => {
-        if (cutDuration && item.seconds > cutDuration) return // 合拍版精简歌词
+        // if (item.seconds < startSec) return // 合拍版精简歌词
+        // if (endSec && item.seconds > endSec) return // 合拍版精简歌词
         let curY = index * lineHeight + paddingTop
         const text = new FFText({
             text: item.text,
@@ -118,7 +122,7 @@ const create = ({ folderPath, cutDuration, autoCut }) => {
             text.addAnimate({
                 from: { y: curY, alpha: 0.3 },
                 to: { y: curY -= lineHeight, alpha: 0.3 },
-                delay: seconds,
+                delay: seconds - startSec,
                 time: 0.5
             })
         }
@@ -126,14 +130,14 @@ const create = ({ folderPath, cutDuration, autoCut }) => {
         text.addAnimate({
             from: { scale: 1, alpha: 0.3 },
             to: { scale: 1.3, alpha: 1 },
-            delay: item.seconds,
+            delay: item.seconds - startSec,
             time: 0.5
         })
         if (index !== lyrics.length - 1) {
             text.addAnimate({
                 from: { scale: 1.3, alpha: 1 },
                 to: { scale: 1, alpha: 0.3 },
-                delay: lyrics[index + 1].seconds,
+                delay: lyrics[index + 1].seconds - startSec,
                 time: 0.5
             })
         }
