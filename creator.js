@@ -11,21 +11,12 @@ const create = ({ folderPath, endSec, startSec, autoCut }) => {
     const fileName = path.basename(folderPath)
     const audioPath = path.join(folderPath, 'accompaniment.wav')// 音频路径
     const lrcPath = path.join(folderPath, `${fileName}.lrc`) // 歌词路径
-    let lyrics = getLyrics(lrcPath)
+    // 获取歌词
+    const lyrics = getLyrics(lrcPath).filter(item => {
+        return item.seconds > startSec && item.seconds < endSec
+    })
 
-    // 自动分段
-    if (autoCut) {
-        endSec = 0
-        for (let i = 1; i < lyrics.length; i++) {
-            const preSec = lyrics[i-1].seconds
-            const curSec = lyrics[i].seconds
-            // if (curSec < 60) break
-            if (endSec < curSec - preSec) {
-                endSec = preSec + (curSec - preSec) / 2
-            }
-        }
-    }
-
+    // 视频时长
     const duration = endSec - startSec
 
     const creator = new FFCreator({
@@ -78,7 +69,7 @@ const create = ({ folderPath, endSec, startSec, autoCut }) => {
     })
     scene.addChild(title)
 
-    if (endSec || autoCut) {
+    if (endSec) {
         const title = new FFText({
             text: `合拍版`,
             x: width / 2,
@@ -98,15 +89,41 @@ const create = ({ folderPath, endSec, startSec, autoCut }) => {
         scene.addChild(title)
     }
 
+    // 倒计时
+    const firLySec = lyrics[0].seconds
+    const addCountDown = (sec = 5) => {
+        for (let i = 1; i <= sec; i++) {
+            const num = new FFText({
+                text: ` ${i} `,
+                x: width / 2,
+                y: height / 2,
+                fontSize: 80,
+                color: '#ffffff',
+                alpha: 0
+            })
+            // num.setBackgroundColor('#ffffff')
+            num.alignCenter()
+            num.addAnimate({
+                from: { alpha: 0 },
+                to: { alpha: 1 },
+                delay: firLySec - startSec - i - 1 + 0.6,
+                time: 0
+            })
+            num.addAnimate({
+                from: { alpha: 1 },
+                to: { alpha: 0 },
+                delay: firLySec - startSec - i + 0.6,
+                time: 0
+            })
+            scene.addChild(num)
+        }
+    }
+
+    addCountDown()
 
     // 添加歌词
     const rollupIndex = Math.floor(height / lineHeight / 2)
-    lyrics = lyrics.filter(item => {
-        return item.seconds > startSec && item.seconds < endSec
-    })
     lyrics.forEach((item, index) => {
-        // if (item.seconds < startSec) return // 合拍版精简歌词
-        // if (endSec && item.seconds > endSec) return // 合拍版精简歌词
         let curY = index * lineHeight + paddingTop
         const text = new FFText({
             text: item.text,

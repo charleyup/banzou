@@ -10,8 +10,8 @@ const fullBasename = path.basename(sourceAudioPath)
 const lrcPath = sourceAudioPath.replace(fullBasename.split('.')[1], 'lrc') // 歌词路径
 const basename = fullBasename.split('.')[0] // 获取输出的文件夹名称
 
-const separateCommond = `spleeter separate -p spleeter:2stems -o ${separateOutput} "./${basename}.mp3"`
-const cutCommond = `ffmpeg -i "${sourceAudioPath}" -acodec copy -ss ${startSec} -t ${endSec - startSec} "./${basename}.mp3"`
+const separateCommond = `spleeter separate -p spleeter:2stems -o ${separateOutput} "./${fullBasename}"`
+const cutCommond = `ffmpeg -i "${sourceAudioPath}" -acodec copy -ss ${startSec} -t ${endSec - startSec} "./${fullBasename}"`
 
 // 音频截取
 const cut = () => shell.exec(cutCommond, code => {
@@ -30,7 +30,7 @@ const separate = () => shell.exec(separateCommond, (code, stdout, stderr) => {
             startSec
         }).then((output) => {
             shell.exec(`open "${output}"`) // 打开输出文件
-            shell.rm([`./${basename}.mp3`])
+            shell.rm([`./${fullBasename}`])
             // shell.rm([sourceAudioPath, lrcPath]) // 删除mp3及歌词文件
         })
     }
