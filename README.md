@@ -24,3 +24,8 @@ node index.js *.mp3 sec
 cd ~/charleyup/banzouba
 node index.js ../../Desktop/dy/* startSec endSec
 ```
+
+## ogg转mp3
+```
+ffmpeg -i input.ogg -c:a libmp3lame -q:a 4 output.mp3
+```
