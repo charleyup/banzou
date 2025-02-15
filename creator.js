@@ -28,7 +28,7 @@ const create = async ({ folderPath, endSec, startSec }) => {
     // 视频时长
     let duration
     if (isCut) {
-        duration = startSec && endSec
+        duration = endSec - startSec
     } else {
         const res = await require('music-metadata').parseFile(audioPath)
         duration = res.format.duration

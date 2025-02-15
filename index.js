@@ -10,15 +10,16 @@ const ext = fullBasename.split('.')[1] // 获取后缀名
 const lrcPath = sourceAudioPath.replace(ext, 'lrc') // 歌词路径，歌词文件需要和原音频文件放在同一目录，且文件名相同
 const basename = fullBasename.split('.')[0] // 获取输出的文件夹名称
 
+const isCut = endSec
+
 // 原音频转成mp3格式
 const transCommond = `ffmpeg -i "${sourceAudioPath}" -c:a libmp3lame -q:a 4 "./${sourceAudioPath.replace(ext, 'mp3')}"`
 
 // 提取伴奏脚本
-const separateCommond = `spleeter separate -p spleeter:2stems -o ${separateOutput} "./${sourceAudioPath.replace(ext, 'mp3')}"`
+const separateCommond = `spleeter separate -p spleeter:2stems -o ${separateOutput} "./${isCut ? sourceAudioPath.replace('.' + ext, '-cut.mp3') : sourceAudioPath.replace(ext, 'mp3')}"`
 
 // 不需要完整音频的可以截取 TODO 有点问题
-// const cutCommond = `ffmpeg -i "./${sourceAudioPath.replace(ext, 'mp3')}" -acodec copy -ss ${startSec} -t ${endSec - startSec} "./${sourceAudioPath.replace(ext, 'mp3')}"`
-const cutCommond = `ffmpeg -i "./${sourceAudioPath}" -acodec copy -ss ${startSec} -t ${endSec - startSec} "./${sourceAudioPath.replace(ext, 'mp3')}"`
+const cutCommond = `ffmpeg -i "./${sourceAudioPath.replace(ext, 'mp3')}" -acodec copy -ss ${startSec} -t ${endSec - startSec} "./${sourceAudioPath.replace('.' + ext, '-cut.mp3')}"`
 
 // 音频转换
 const trans = () => shell.exec(transCommond, code => {
@@ -26,6 +27,7 @@ const trans = () => shell.exec(transCommond, code => {
     if (code === 0) {
         console.log("格式转化成功")
         if (startSec && endSec) {
+            console.log("开始截取")
             cut()
         } else {
             separate()
@@ -37,10 +39,9 @@ const trans = () => shell.exec(transCommond, code => {
 
 // 音频截取
 const cut = () => shell.exec(cutCommond, code => {
-    console.log("开始截取")
     if (code === 0) {
         console.log("截取成功")
-        // separate()
+        separate()
     } else {
         console.error("截取失败")
     }
@@ -51,11 +52,10 @@ const separate = () => shell.exec(separateCommond, (code, stdout, stderr) => {
     console.log("开始分离伴奏")
     if (code === 0) {
         console.log("伴奏分离成功")
-        shell.cp(lrcPath, path.resolve(__dirname, `${separateOutput}/${basename}/${basename}.lrc`)) // 拷贝歌词到伴奏文件夹
-        const folderPath = path.resolve(__dirname, `${separateOutput}/${basename}`)
-        setTimeout(() => {
-            
-        })
+        // shell.cp(lrcPath, path.resolve(__dirname, `${separateOutput}/${basename}/${basename}.lrc`)) // 拷贝歌词到伴奏文件夹
+        // const folderPath = path.resolve(__dirname, `${separateOutput}/${basename}`)
+        shell.cp(lrcPath, path.resolve(__dirname, `${separateOutput}/${basename + (isCut ? '-cut' : '')}/${basename + (isCut ? '-cut' : '')}.lrc`)) // 拷贝歌词到伴奏文件夹
+        const folderPath = path.resolve(__dirname, `${separateOutput}/${basename + (isCut ? '-cut' : '')}`)
         require('./creator.js')({
             folderPath,
             endSec,
