@@ -2,26 +2,42 @@ const path = require('path')
 const fs = require('fs')
 const colors = require('colors')
 const { FFScene, FFText, FFCreator, FFAudio } = require('ffcreator')
+
 const config = require('./config')
 const { fontSize, lineHeight, paddingTop } = config.text
 const { width, height } = config.creator
 const { getLyrics } = require('./getLRC.js')
 
-const create = ({ folderPath, endSec, startSec, autoCut }) => {
+const create = async ({ folderPath, endSec, startSec }) => {
+
+    const isCut = startSec && endSec // 是否裁剪其中一段
+    
     const fileName = path.basename(folderPath)
     const audioPath = path.join(folderPath, 'accompaniment.wav')// 音频路径
     const lrcPath = path.join(folderPath, `${fileName}.lrc`) // 歌词路径
     // 获取歌词
     const lyrics = getLyrics(lrcPath).filter(item => {
-        return item.seconds > startSec && item.seconds < endSec
+        // 合拍版截取其中一段
+        if (isCut) {
+            return item.seconds > startSec && item.seconds < endSec
+        } else {
+            return item
+        }
     })
 
     // 视频时长
-    const duration = endSec - startSec
+    let duration
+    if (isCut) {
+        duration = startSec && endSec
+    } else {
+        const res = await require('music-metadata').parseFile(audioPath)
+        duration = res.format.duration
+        console.log('resd', res)
+    }
 
     const creator = new FFCreator({
         cacheDir: config.cacheDir,
-        output: path.join(config.creator.outputDir, `${fileName}${endSec || autoCut ? '-合拍版' : ''}.mp4`),
+        output: path.join(config.creator.outputDir, `${fileName}${(startSec && endSec) ? '-合拍版' : ''}.mp4`),
         width,
         height,
         audio: path.resolve(audioPath),

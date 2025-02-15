@@ -9,9 +9,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "canvas": "^3.1.0",
     "colors": "^1.4.0",
-    "ffcreator": "^6.6.9",
+    "ffcreator": "5",
+    "ffcreatorlite": "^2.5.1",
     "iconv-lite": "^0.6.3",
+    "jsdom": "^26.0.0",
+    "music-metadata": "^10.9.0",
     "shelljs": "^0.8.5"
   },
   "devDependencies": {}
