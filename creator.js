@@ -108,6 +108,7 @@ const create = async ({ folderPath, endSec, startSec }) => {
     // 倒计时
     const firLySec = lyrics[0].seconds
     const addCountDown = (sec = 5) => {
+        if (firLySec - startSec < 5) return
         for (let i = 1; i <= sec; i++) {
             const num = new FFText({
                 text: ` ${i} `,
