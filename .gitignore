@@ -5,3 +5,8 @@
 /jj
 /jay
 .DS_Store
+
+*.mp3
+*/*.mp3
+*.wav
+*.mp4

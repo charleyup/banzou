@@ -37,7 +37,8 @@ const create = async ({ folderPath, endSec, startSec }) => {
 
     const creator = new FFCreator({
         cacheDir: config.cacheDir,
-        output: path.join(config.creator.outputDir, `${fileName}${(startSec && endSec) ? '-合拍版' : ''}.mp4`),
+        // output: path.join(config.creator.outputDir, `${fileName}${(startSec && endSec) ? '-合拍版' : ''}.mp4`),
+        output: path.join(config.creator.outputDir, `${fileName}${(startSec && endSec) ? '' : ''}.mp4`),
         width,
         height,
         audio: path.resolve(audioPath),
@@ -136,7 +137,7 @@ const create = async ({ folderPath, endSec, startSec }) => {
         }
     }
 
-    addCountDown()
+    // addCountDown()
 
     // 添加歌词
     const rollupIndex = Math.floor(height / lineHeight / 2)

@@ -2,7 +2,7 @@
 
 ## 提取伴奏
 `
-python3.8 -m spleeter separate -p spleeter:2stems -o output
+spleeter separate -p spleeter:2stems -o output *.mp3
 `
 
 ## 合成伴奏、歌词
@@ -28,4 +28,14 @@ node index.js ../../Desktop/dy/* startSec endSec
 ## ogg转mp3
 ```
 ffmpeg -i input.ogg -c:a libmp3lame -q:a 4 output.mp3
+```
+
+## 音频截取
+```
+ffmpeg -i 1.wav -acodec copy -ss 0 -t 60 output.wav
+```
+
+## 音频文件转伴奏mp3（不是wav）
+```
+node banzouMp3.js inputPath
 ```

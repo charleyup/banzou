@@ -10,13 +10,15 @@ const ext = fullBasename.split('.')[1] // 获取后缀名
 const lrcPath = sourceAudioPath.replace(ext, 'lrc') // 歌词路径，歌词文件需要和原音频文件放在同一目录，且文件名相同
 const basename = fullBasename.split('.')[0] // 获取输出的文件夹名称
 
-const isCut = endSec
+// const isCut = endSec
+const isCut = false
 
 // 原音频转成mp3格式
 const transCommond = `ffmpeg -i "${sourceAudioPath}" -c:a libmp3lame -q:a 4 "./${sourceAudioPath.replace(ext, 'mp3')}"`
 
 // 提取伴奏脚本
-const separateCommond = `spleeter separate -p spleeter:2stems -o ${separateOutput} "./${isCut ? sourceAudioPath.replace('.' + ext, '-cut.mp3') : sourceAudioPath.replace(ext, 'mp3')}"`
+// const separateCommond = `spleeter separate -p spleeter:2stems -o ${separateOutput} "./${isCut ? sourceAudioPath.replace('.' + ext, '-cut.mp3') : sourceAudioPath.replace(ext, 'mp3')}"`
+const separateCommond = `spleeter separate -p spleeter:2stems -o ${separateOutput} "${sourceAudioPath}"`
 
 // 不需要完整音频的可以截取 TODO 有点问题
 const cutCommond = `ffmpeg -i "./${sourceAudioPath.replace(ext, 'mp3')}" -acodec copy -ss ${startSec} -t ${endSec - startSec} "./${sourceAudioPath.replace('.' + ext, '-cut.mp3')}"`
@@ -63,7 +65,7 @@ const separate = () => shell.exec(separateCommond, (code, stdout, stderr) => {
         }).then((output) => {
             shell.exec(`open "${output}"`) // 打开输出文件
             // shell.rm([`./${fullBasename}`])
-            // shell.rm([sourceAudioPath, lrcPath]) // 删除mp3及歌词文件
+            shell.rm([sourceAudioPath, lrcPath]) // 删除mp3及歌词文件
         })
     } else {
         console.error("伴奏分离失败：", stderr)
@@ -71,15 +73,5 @@ const separate = () => shell.exec(separateCommond, (code, stdout, stderr) => {
 })
 
 // cut()
-trans()
-// shell.cp(lrcPath, path.resolve(__dirname, `${separateOutput}/${basename}/${basename}.lrc`)) // 拷贝歌词到伴奏文件夹
-//         const folderPath = path.resolve(__dirname, `${separateOutput}/${basename}`)
-//         require('./creator.js')({
-//             folderPath,
-//             endSec,
-//             startSec
-//         }).then((output) => {
-//             shell.exec(`open "${output}"`) // 打开输出文件
-//             shell.rm([`./${fullBasename}`])
-//             // shell.rm([sourceAudioPath, lrcPath]) // 删除mp3及歌词文件
-//         })
+// trans()
+separate()
